@@ -3,10 +3,12 @@ package envconfig
 import (
 	"log/slog"
 	"math"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/ollama/ollama/format"
 	"github.com/ollama/ollama/logutil"
 )
 
@@ -294,6 +296,28 @@ func TestContextLength(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLowVRAMThreshold(t *testing.T) {
+	defaultThreshold := uint64(20 * format.GibiByte)
+	t.Run("default", func(t *testing.T) {
+		t.Setenv("OLLAMA_LOW_VRAM_THRESHOLD", "")
+		if got := LowVRAMThreshold(); got != defaultThreshold {
+			t.Fatalf("expected default %d, got %d", defaultThreshold, got)
+		}
+	})
+
+	t.Run("env override", func(t *testing.T) {
+		expected := uint64(8 * format.GibiByte)
+		t.Setenv("OLLAMA_LOW_VRAM_THRESHOLD", strconv.FormatUint(expected, 10))
+		if got := LowVRAMThreshold(); got != expected {
+			t.Fatalf("expected env override %d, got %d", expected, got)
+		}
+
+		if entry, ok := AsMap()["OLLAMA_LOW_VRAM_THRESHOLD"]; !ok || entry.Value != expected {
+			t.Fatalf("expected AsMap entry %d, got %#v", expected, entry.Value)
+		}
+	})
 }
 
 func TestLogLevel(t *testing.T) {

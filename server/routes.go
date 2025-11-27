@@ -72,8 +72,9 @@ func experimentEnabled(name string) bool {
 var useClient2 = experimentEnabled("client2")
 
 // Low VRAM mode is based on the sum of total VRAM (not free) and triggers
-// reduced context length on some models
-var lowVRAMThreshold uint64 = 20 * format.GibiByte
+// reduced context length on some models.
+// Default threshold is configurable via OLLAMA_LOW_VRAM_THRESHOLD.
+var lowVRAMThreshold uint64 = envconfig.LowVRAMThreshold()
 
 var mode string = gin.DebugMode
 
